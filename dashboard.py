@@ -20,6 +20,11 @@ def cargar_csv(csv):
     df["año"] = df.fec_reserva.dt.strftime("%Y")
     return df
 
+def filtros_dashboard(df):
+    st.sidebar.title("Filtros")
+    ciudad = st.sidebar.selectbox("Ciudad",df.ciudad.unique().tolist())
+    return df[df.ciudad == ciudad]
+
 def venta_total_anual(df):
     total = round(df.total.sum())
     locale.setlocale(locale.LC_ALL, "")
@@ -73,16 +78,75 @@ def articulo_recaudaciones_top(df):
     
     return st.write(metric_html,unsafe_allow_html=True)
 
+def ventas_por_ciudad(df):
+    agrupacion_ventas_ciudad = df.groupby("ciudad")["total"].sum().reset_index()
+    fig = px.bar(agrupacion_ventas_ciudad, x="ciudad",y="total",color="ciudad")
+
+    fig.update_layout(xaxis_title='Ciudad',
+                      yaxis_title='Total de ventas',
+                      title={
+                          "text":"Venta mensual total por ciudad",
+                          "x":0.5,
+                          "xanchor": "center"},
+                      title_font_color= "#D8E2DC", height=255)
+    
+    st.plotly_chart(fig,use_container_width=True)
+
+def evolucion_diaria_ventas(df):
+    ventas_diarias = df.groupby(df.fec_reserva.dt.date)["total"].sum().reset_index()
+    fig = px.area(ventas_diarias, x="fec_reserva",y="total")
+
+    fig.update_layout(xaxis_title='Fecha',
+                      yaxis_title='Total',
+                      title={
+                          "text":"Venta mensual total por ciudad",
+                          "x":0.5,
+                          "xanchor": "center"},
+                      title_font_color= "#D8E2DC", height=255)
+    
+    st.plotly_chart(fig,use_container_width=True)
+
+def top_articulos(df):
+    ventas_por_articulos = df.groupby("sku_nom")["total"].sum().reset_index()
+    ventas_articulos_filtrado = ventas_por_articulos[ventas_por_articulos.total>=462182972] 
+    fig = px.pie(ventas_articulos_filtrado,values="total",names="sku_nom",hole=.5)
+
+    fig.update_layout(
+        title={
+            "text":"Top 10 articulos que generaron mas ganancias",
+            "x":0.5,
+            "xanchor": "center"},
+        title_font_color= "#D8E2DC",
+        font={
+            "size":13}, height=350)
+
+    st.plotly_chart(fig,use_container_width=True)  
+
 def dashboard(df):
+    filtro = filtros_dashboard(df)
+
+    m1,m2,m3 = st.columns(3)
+    with m1:
+        ventas_por_ciudad(df)
+    with m2:
+        evolucion_diaria_ventas(df)
+    with m3:
+        top_articulos(df)
+
     m1,m2,m3 = st.columns(3)
     with m1:
         venta_total_anual(df)
-    m1,m2,m3 = st.columns(3)
-    with m1:
+    with m2:
         max_venta(df)
+    with m3:
+        articulo_recaudaciones_top(df)
     m1,m2,m3 = st.columns(3)
     with m1:
-        articulo_recaudaciones_top(df)
+        venta_total_anual(filtro)
+    with m2:
+        max_venta(filtro)
+    with m3:
+        articulo_recaudaciones_top(filtro)
 
 def main():
     st.title("Dashboard para el análisis de ventas")
