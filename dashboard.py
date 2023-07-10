@@ -8,7 +8,7 @@ import locale
 # import missingno as msn
 # from PIL import Image
 
-st.set_page_config(layout="wide", page_title="Dashboard", page_icon=":chart_with_upwards_trend:", initial_sidebar_state="collapsed")
+st.set_page_config(layout="wide", page_title="Dashboard", page_icon=":chart_with_upwards_trend:", initial_sidebar_state="expanded")
 
 @st.cache_data
 def cargar_csv(csv):
@@ -25,7 +25,7 @@ def filtros_dashboard(df):
     ciudad = st.sidebar.selectbox("Ciudad",df.ciudad.unique().tolist())
     return df[df.ciudad == ciudad]
 
-def venta_total_anual(df):
+def venta_total(df,titulo):
     total = round(df.total.sum())
     locale.setlocale(locale.LC_ALL, "")
     total_formateado = locale.format_string("%d",total,grouping=True)
@@ -33,7 +33,7 @@ def venta_total_anual(df):
     color = 'color: black; font-size: 27px; text-align: center'
     div_style = "background: linear-gradient(to right, #0075A2, #00FFC5);padding:1px;border-radius:5px;text-align:center;"
     title_style = "font-size:13px;font-weight:lighter;color:black;margin-bottom:10px;"
-    titulo = "Total ventas"
+    titulo = titulo
 
     metric_html = f"<div style= '{div_style}'>"\
         f"<span style= '{title_style}'>{titulo}</span></br>"\
@@ -135,14 +135,14 @@ def dashboard(df):
 
     m1,m2,m3 = st.columns(3)
     with m1:
-        venta_total_anual(df)
+        venta_total(df,"Total ventas Enero")
     with m2:
         max_venta(df)
     with m3:
         articulo_recaudaciones_top(df)
     m1,m2,m3 = st.columns(3)
     with m1:
-        venta_total_anual(filtro)
+        venta_total(filtro,"Total ventas ciudad")
     with m2:
         max_venta(filtro)
     with m3:
