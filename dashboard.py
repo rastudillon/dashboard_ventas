@@ -79,7 +79,7 @@ def articulo_recaudaciones_top(df):
     return st.write(metric_html,unsafe_allow_html=True)
 
 def ventas_por_ciudad(df):
-    agrupacion_ventas_ciudad = df.groupby("ciudad")["total"].sum().reset_index()
+    agrupacion_ventas_ciudad = (df.groupby("ciudad")["total"].sum()/31).reset_index()
     fig = px.bar(agrupacion_ventas_ciudad, x="ciudad",y="total",color="ciudad")
 
     fig.update_layout(xaxis_title='Ciudad',
